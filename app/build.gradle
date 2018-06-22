@@ -1,0 +1,90 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion rootProject.ext.android["compileSdkVersion"]
+    buildToolsVersion rootProject.ext.android["buildToolsVersion"]
+
+    defaultConfig {
+        minSdkVersion rootProject.ext.android["minSdkVersion"]
+        targetSdkVersion rootProject.ext.android["targetSdkVersion"]
+        versionCode 1
+        versionName "1.0.0"
+
+        lintOptions {
+            abortOnError false
+        }
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+
+        debug {
+            storeFile file("../keystore/live.keystore")
+            storePassword "yixia123"
+            keyAlias "live.keystore"
+            keyPassword "yixia123"
+        }
+
+        release {
+            storeFile file("../keystore/live.keystore")
+            storePassword "yixia123"
+            keyAlias "live.keystore"
+            keyPassword "yixia123"
+        }
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+
+        release {
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+
+        applicationVariants.all { variant ->
+            variant.outputs.all {
+                def type = variant.buildType.name
+                def path = it.outputFile.absolutePath
+                if (path.contains(type)) {
+                    it.outputFileName = "app-${type}-signed.apk"
+                }
+                println it.outputFile.name
+            }
+
+            variant.assemble.doLast { assemble ->
+                def type = variant.buildType.name
+                def apkSrc = project.buildDir.absolutePath + '/outputs/apk/' + type
+                def apkDest = project.buildDir.absolutePath + '/outputs/apk'
+                copy {
+                    from apkSrc
+                    into apkDest
+                }
+            }
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:support-vector-drawable:27.1.1'
+
+    /*implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:cardview-v7:23.2.1'
+    implementation 'com.google.code.gson:gson:2.8.4'
+    implementation 'com.squareup.retrofit2:retrofit:2.2.0'
+    implementation 'io.reactivex:rxandroid:1.2.1'
+    implementation 'com.squareup.retrofit2:adapter-rxjava:2.1.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.2.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:3.4.1'
+    implementation 'com.jakewharton:butterknife:8.6.0'*/
+}
